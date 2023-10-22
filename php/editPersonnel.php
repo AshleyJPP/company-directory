@@ -4,7 +4,6 @@ include 'config.php';
 
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Get the POST data
     $id = $_POST['id'];
     $firstName = $_POST['firstName'];
     $lastName = $_POST['lastName'];

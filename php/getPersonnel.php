@@ -42,8 +42,6 @@ $where
 ORDER BY $order ";
 
 $query = $sort ? $query . $sort : $query;
-// echo $query;
-// exit;
 $result = db($query);
 $data = [];
 while ($row = $result->fetch_assoc()) {

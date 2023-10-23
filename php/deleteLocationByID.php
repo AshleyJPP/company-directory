@@ -23,7 +23,7 @@ if(isset($_POST['id'])) {
             if($data['departmentCount'] > 0) {
                 $response["status"] = array(
                     "code" => 400,
-                    "description" => "You cannot remove the entry for location " . $locationId . " because it has " . $data['departmentCount'] . " departments assigned to it."
+                    "description" => "You cannot remove the entry for this location because it has " . $data['departmentCount'] . " departments assigned to it."
                 );
             } else {
                 

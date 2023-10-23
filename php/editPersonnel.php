@@ -1,5 +1,9 @@
 <?php
 
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+error_reporting(E_ALL);
+
 include 'config.php';
 
 
@@ -9,9 +13,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $lastName = $_POST['lastName'];
     $jobTitle = $_POST['jobTitle'];
     $email = $_POST['email'];
-    $department = $_POST['department'];
+    $department = $_POST['departmentId'];
 
-    $stmt = $conn->prepare("UPDATE personnel SET firstName = ?, lastName = ?, jobTitle = ?, email = ?, department = ? WHERE id = ?");
+    $stmt = $conn->prepare("UPDATE personnel SET firstName = ?, lastName = ?, jobTitle = ?, email = ?, departmentId = ? WHERE id = ?");
 
     
     $stmt->bind_param("sssssi", $firstName, $lastName, $jobTitle, $email, $department, $id);

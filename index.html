@@ -99,7 +99,7 @@
     </div>
 </div>
 
-    
+    <!--Edit Personnel Modal-->
 <div id="editPersonnelModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-sm modal-dialog-centered modal-dialog-scrollable">
        
@@ -205,43 +205,30 @@
 
 <!-- Edit Location Modal -->
 <div id="editLocationModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="editLocationLabel" aria-hidden="true">
-  
-  <div class="modal-dialog modal-sm modal-dialog-centered modal-dialog-scrollable">
-       
-    <div class="modal-content shadow"> 
-      
-      <div class="modal-header bg-primary bg-gradient text-white">
-        <h5 class="modal-title" id="editLocationLabel">Edit Location</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-
-      <div class="modal-body">
-          
-        <form id="editLocationForm">
-
-           <input type="hidden" id="editLocationId" value="">
-
-          <div class="form-floating mb-3">
-            <input type="text" class="form-control" id="editLocationName" placeholder="Location Name" required>
-            <label for="editLocationName">Location Name</label>
-          </div>
-
-          <!-- You can add more input fields here if needed -->
-
-        </form>
-
-      </div>
-
-      <div class="modal-footer">
-        <button type="submit" form="editLocationForm" class="btn btn-outline-primary btn-sm myBtn">SAVE</button>
-        <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">CANCEL</button>
-      </div>
- 
+    <div class="modal-dialog modal-sm modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content shadow"> 
+            <div class="modal-header bg-primary bg-gradient text-white">
+                <h5 class="modal-title" id="editLocationLabel">Edit Location</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editLocationForm">
+                <div class="modal-body">
+                    <input type="hidden" id="editLocationId" value="">
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="editLocationName" placeholder="Location Name" required>
+                        <label for="editLocationName">Location Name</label>
+                    </div>
+                    <!-- You can add more input fields here if needed -->
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-outline-primary btn-sm myBtn">SAVE</button>
+                    <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">CANCEL</button>
+                </div>
+            </form>
+        </div>
     </div>
-    
-  </div>
-  
 </div>
+
 
           
 <!-- Delete Employee Modal -->
@@ -272,7 +259,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        Are you sure you want to delete this department? This process cannot be undone.
+        Are you sure you want to delete this department?
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -479,8 +466,17 @@
     </div>
   </div>
 </div>
+
+
+
+
+
+
+
+
 <div id="personnelContainer">
-    </div>
+    <!-- Personnel data will be populated here -->
+</div>
 <script type="text/javascript" src="/project2/packages/jquery-3.7.1.js"></script>
 <script type="text/javascript" src="/project2/packages/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script type="text/javascript" src="/project2/js/script.js"></script>

@@ -97,8 +97,6 @@ function filterTable(departmentId, locationId) {
         if (response.data && response.data.length > 0) {
             updateTableWithFilteredData(response.data);
         } else {
-            console.log("No data found for the applied filters.");
-            // Show the no data modal
             $('#noDataModal').modal('show');
         }
     } else {
@@ -273,6 +271,56 @@ error: function(jqXHR, textStatus, errorThrown) {
 });
 
 
+function fetchLocations() {
+    $.ajax({
+        url: '/project2/php/getAllLocations.php', 
+        type: 'GET',
+        dataType: 'json', 
+        success: function(response) {
+            if (response.data && Array.isArray(response.data)) {
+                populateLocationsTable(response.data);
+            } else {
+                console.error("Invalid response structure:", response);
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.error("Error fetching locations:", textStatus, errorThrown);
+        }
+    });
+}
+
+$(document).ready(function() {
+    fetchLocations();
+    $("#addLocationForm").on("submit", function(e) {
+        e.preventDefault(); 
+        var locationName = $("#addLocationName").val(); 
+        $.ajax({
+            url: '/project2/php/addLocation.php', 
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                locationName: locationName 
+            },
+            success: function(response) {
+                
+                if(response.status.code === 200) {
+                    console.log(response.status.description);
+                    $('#addLocation').modal('hide'); 
+                    fetchLocations();
+                } else {
+                    console.error("Error:", response.status.description);
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error("AJAX error:", textStatus, errorThrown);
+                
+            }
+        });
+    });
+    fetchLocations();
+});
+
+
 
 
 
@@ -348,7 +396,6 @@ error: function (jqXHR, textStatus, errorThrown) {
 
 
 $(document).ready(function() {
-    // Handler for personnel form submission
     $("#editPersonnelForm").on("submit", function (e) {
         e.preventDefault();
 
@@ -358,32 +405,72 @@ $(document).ready(function() {
         var jobTitle = $("#editPersonnelJobTitle").val();
         var emailAddress = $("#editPersonnelEmailAddress").val();
         var department = $("#editPersonnelDepartment").val();
+        var data = {
+            id: employeeID,
+            firstName: firstName,
+            lastName: lastName,
+            jobTitle: jobTitle,
+            email: emailAddress,
+            departmentId: department
+        };
 
-    
-    });
-
-    $("#editDepartmentForm").on("submit", function(e) {
-        e.preventDefault();
-
-        var departmentId = $("#editDepartmentId").val(); 
-        var departmentName = $("#editDepartmentName").val();
-        var locationId = $("#editDepartmentLocation").val();
-
+        
         $.ajax({
-            url: '/project2/php/editDepartment.php',
-            method: 'POST',
-            data: {
-                id: departmentId,
-                name: departmentName,
-                locationID: locationId
-            },
+            url: '/project2/php/editPersonnel.php',
+            type: 'POST',
+            data: data,
+            dataType: 'json', 
             success: function(response) {
-                            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                console.error("Error updating department:", textStatus, errorThrown);
+                if(response.statusCode == 200) {
+                    $("#editPersonnelModal").modal('hide');
+                    location.reload();
+                } else {
+                    console.error('Error updating personnel:', response.error);
                 }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error('AJAX error:', textStatus, errorThrown);
+            }
         });
     });
+});
+
+$("#editDepartmentForm").on("submit", function(e) {
+    e.preventDefault();
+
+    var departmentId = $("#editDepartmentId").val(); 
+    var departmentName = $("#editDepartmentName").val();
+    var locationId = $("#editDepartmentLocation").val();
+
+    $.ajax({
+        url: '/project2/php/editDepartment.php',
+        method: 'POST',
+        data: {
+            id: departmentId,
+            name: departmentName,
+            locationID: locationId
+        },
+success: function(response) {
+        if (response.status.code === "200") {
+        var updatedDepartment = response.data;
+        var departmentRow = $("#departmentsTable").find("tr[data-department-id='" + updatedDepartment.id + "']");
+        if (departmentRow.length) {
+            departmentRow.find(".departmentName").text(updatedDepartment.name);
+            departmentRow.find(".departmentLocation").text(updatedDepartment.locationName);
+        } else {
+            createDepartmentRow(updatedDepartment); 
+        }
+        $("#editDepartmentForm").trigger("reset");
+        $('#editDepartmentModal').modal('hide');
+    } else {
+        console.error("Server responded with status code", response.status.code);
+    }
+},
+error: function(jqXHR, textStatus, errorThrown) {
+    console.error("AJAX request failed:", textStatus, errorThrown);
+}
+    });
+});
 
     $(document).on('click', '.editDepartmentBtn', function() {
         var departmentId = $(this).data('id');
@@ -412,7 +499,48 @@ $(document).ready(function() {
         });
         return false;
     });
+    
+$(document).on('click', '.editLocationBtn', function() {
+    var locationId = $(this).data('id');
+    var modal = $('#editLocationModal');
+    modal.find('input#editLocationId').val(locationId);
 });
+
+$(document).ready(function() {
+    $("#editLocationForm").on("submit", function(e) {
+        e.preventDefault(); 
+        var locationId = $("#editLocationId").val();
+        var locationName = $("#editLocationName").val();
+        $.ajax({
+            url: '/project2/php/editLocation.php',
+            method: 'POST',
+            data: {
+                id: locationId,
+                name: locationName
+            },
+            success: function(response) {
+    console.log('Server response as a string:', response);
+
+    try {
+        var jsonResponse = JSON.parse(response);
+        if(jsonResponse.status === "success") {
+            $("tr[data-location-id='" + locationId + "']").find(".locationName").text(locationName);
+           $('#editLocationModal').modal('hide');
+        } else {
+            console.error("Server responded with status:", jsonResponse.status);
+        }
+    } catch (e) {
+        console.error("Error parsing response JSON:", e);
+    }
+},
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error("Error updating location:", textStatus, errorThrown);
+            }
+        });
+    });
+});
+
+
 
 $(document).on('click', '.removeDepartmentBtn', function() {
     var departmentId = $(this).data('id');
@@ -432,7 +560,7 @@ $('#confirmDeleteDepartment').click(function() {
         success: function(response) {
             if(response.status.code === "200") {
                 $("tr[data-department-id='" + departmentId + "']").remove();
-                $('#deleteDepartmentModal').modal('hide'); // Hide the modal
+                $('#deleteDepartmentModal').modal('hide');
             } else {
                 console.error("Error deleting department:", response.status.description);
             }
@@ -450,13 +578,13 @@ function createDepartmentRow(department) {
         .append($("<td></td>").text(department.location).addClass("align-middle text-nowrap departmentLocation"))
         .append($("<td></td>").addClass("text-end text-nowrap").html('<button type="button" class="btn btn-primary btn-sm editDepartmentBtn" data-bs-toggle="modal" data-bs-target="#editDepartmentModal" data-id="' + department.id + '"><i class="fa-solid fa-pencil fa-fw"></i></button> <button type="button" class="btn btn-danger btn-sm removeDepartmentBtn" data-id="' + department.id + '"><i class="fa-solid fa-trash fa-fw"></i></button>'));
 
-    $("#departmentTable tbody").append(row);
+    $("#departmentsTable tbody").append(row);
 }
 
 
 
 $.ajax({
-    url: 'https://ajppeters.com/project2/php/getAll.php',
+    url: '/project2/php/getAll.php',
     type: 'GET',
     dataType: 'json',
     success: function(response) {
@@ -471,12 +599,12 @@ $.ajax({
 
 function refreshAllData() {
     $.ajax({
-        url: 'https://ajppeters.com/project2/php/getAll.php',
+        url: '/project2/php/getAll.php',
         type: 'GET',
         dataType: 'json',
         success: function(response) {
             populatePersonnel(response.data);
-        }, // <- You were missing this closing brace and comma
+        },
         error: function(jqXHR, textStatus, errorThrown) {
             console.error('Error: ' + textStatus + ' - ' + errorThrown);
         }
@@ -485,7 +613,7 @@ function refreshAllData() {
 
 function refreshAllDepartments() {
     $.ajax({
-        url: 'https://ajppeters.com/project2/php/getAllDepartments.php',
+        url: '/project2/php/getAllDepartments.php',
         type: 'GET',
         dataType: 'json',
         success: function(response) {
@@ -499,7 +627,7 @@ function refreshAllDepartments() {
 
 function refreshAllLocations() {
     $.ajax({
-        url: 'https://ajppeters.com/project2/php/getAllLocations.php',
+        url: '/project2/php/getAllLocations.php',
         type: 'GET',
         dataType: 'json',
         success: function(response) {
@@ -590,8 +718,6 @@ function fetchAndPopulateDepartmentsDropdown(dropdownId) {
 $('#editDepartmentModal').on('show.bs.modal', function (event) {
     var button = $(event.relatedTarget); 
     var departmentName = button.closest('tr').find('.departmentName').text();
-
-    // Update the modal's content.
     var modal = $(this);
     modal.find('input#editDepartmentName').attr("placeholder", departmentName); 
     modal.find('input#editDepartmentName').val('');
@@ -607,9 +733,11 @@ function deleteLocation(locationId) {
     $.ajax({
         url: '/project2/php/deleteLocationByID.php',
         type: 'POST',
+        dataType: 'json',
         data: { id: locationId },
         success: function(response) {
             if (response.status.code === 200) {
+                fetchLocations(); 
                 $('#deleteLocationModal').modal('hide');
                 $('#deleteModalError').hide().text('');
             } else {

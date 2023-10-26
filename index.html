@@ -159,7 +159,7 @@
 
  <div>
      
-     <!-- Edit Department Modal -->
+<!-- Edit Department Modal -->
 <div id="editDepartmentModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="editDepartmentLabel" aria-hidden="true">
   
   <div class="modal-dialog modal-sm modal-dialog-centered modal-dialog-scrollable">
@@ -178,13 +178,16 @@
           <input type="hidden" id="editDepartmentId" value="">
 
           <div class="form-floating mb-3">
-            <input type="text" class="form-control" id="editDepartmentName" placeholder="Department Name" required>
-            <label for="editDepartmentName">Department Name</label>
+            <!-- Replaced the input with a select dropdown for department names -->
+            <select class="form-select" id="editDepartmentDropdown" required>
+                <!-- Options will be populated dynamically -->
+            </select>
+            <label for="editDepartmentDropdown">Department Name</label>
           </div>
 
           <div class="form-floating">
             <select class="form-select" id="editDepartmentLocation" placeholder="Location" required>
-                </select>
+            </select>
             <label for="editDepartmentLocation">Location</label>
           </div>  
 
@@ -203,6 +206,7 @@
   
 </div>
 
+
 <!-- Edit Location Modal -->
 <div id="editLocationModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" data-bs-keyboard="false" aria-labelledby="editLocationLabel" aria-hidden="true">
     <div class="modal-dialog modal-sm modal-dialog-centered modal-dialog-scrollable">
@@ -215,8 +219,9 @@
                 <div class="modal-body">
                     <input type="hidden" id="editLocationId" value="">
                     <div class="form-floating mb-3">
-                        <input type="text" class="form-control" id="editLocationName" placeholder="Location Name" required>
-                        <label for="editLocationName">Location Name</label>
+                        <!-- Changed this to a dropdown -->
+                        <select class="form-select" id="editLocationDropdown" required></select>
+                        <label for="editLocationDropdown">Location Name</label>
                     </div>
                     <!-- You can add more input fields here if needed -->
                 </div>
@@ -228,6 +233,7 @@
         </div>
     </div>
 </div>
+
 
 
           
@@ -264,6 +270,42 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         <button type="button" class="btn btn-danger" id="confirmDeleteDepartment">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Dependency Warning Modal -->
+<div class="modal fade" id="dependencyModal" tabindex="-1" aria-labelledby="dependencyModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="dependencyModalLabel">Warning</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- The warning message will be inserted here by the JavaScript -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--Dependency Modal-->
+<div class="modal fade" id="dependencyModal" tabindex="-1" aria-labelledby="dependencyModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="dependencyModalLabel">Dependency Warning</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Message will be inserted here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
@@ -365,8 +407,9 @@
         <form id="addDepartmentForm">
 
           <div class="form-floating mb-3">
-            <input type="text" class="form-control" id="addDepartmentName" placeholder="Department Name" required>
-            <label for="addDepartmentName">Department Name</label>
+            <select class="form-select" id="addDepartmentNameDropdown" required>
+        <!-- Options will be populated dynamically -->
+    </select>
           </div>
 
           <div class="form-floating">

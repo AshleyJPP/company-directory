@@ -34,7 +34,8 @@
 
     // SQL does not accept parameters and so is not prepared
 
-    $query = 'SELECT id, name FROM location'; // Adjust your table name and columns as per your database schema
+    $query = 'SELECT id, name FROM location ORDER BY name ASC';
+ // Adjust your table name and columns as per your database schema
 
     $result = $conn->query($query);
     

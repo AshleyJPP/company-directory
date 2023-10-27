@@ -25,8 +25,28 @@ $("#filterBtn").click(function () {
     filterTable(selectedDepartment, selectedLocation);
         $('#filterModal').modal('hide');
     });
+});
 
-  
+$("#filterDepartment").change(function() {
+    if ($(this).val() !== "all") {
+        $("#filterLocation").val("all");
+    }
+});
+
+$("#filterLocation").change(function() {
+    if ($(this).val() !== "all") {
+        $("#filterDepartment").val("all");
+    }
+});
+
+$("#applyFilterBtn").click(function() {
+    var selectedDepartment = $("#filterDepartment").val();
+    var selectedLocation = $("#filterLocation").val();
+
+    // Fetch data based on the selected filters
+    // Update your table with the fetched data
+
+    $('#filterModal').modal('hide'); // Close the modal
 });
   
 
@@ -253,9 +273,9 @@ $("#addDepartmentForm").submit(function(event) {
     event.preventDefault();
 
     var departmentData = {
-        name: $("#addDepartmentNameDropdown option:selected").text(),
-        locationID: $("#addDepartmentLocation").val()
-    };
+    name: $("#addDepartmentNameInput").val(),
+    locationID: $("#addDepartmentLocation").val()
+};
     var locationName = $("#addDepartmentLocation option:selected").text();
 
     $.ajax({
@@ -280,7 +300,6 @@ $("#addDepartmentForm").submit(function(event) {
 
 
 $('#addDepartment').on('show.bs.modal', function (event) {
-    fetchAndPopulateDepartmentsDropdown("#addDepartmentNameDropdown");
     fetchAndPopulateLocationsDropdown("#addDepartmentLocation");
 });
 
@@ -453,7 +472,7 @@ $("#editDepartmentForm").on("submit", function(e) {
     e.preventDefault();
 
     var departmentId = $("#editDepartmentId").val(); 
-    var departmentName = $("#editDepartmentDropdown option:selected").text();
+    var departmentName = $("#editDepartmentNameInput").val();
     var locationId = $("#editDepartmentLocation").val();
     $.ajax({
         url: '/project2/php/editDepartment.php',
@@ -497,7 +516,7 @@ $(document).on('click', '.editDepartmentBtn', function() {
             if(response.status.code == 200 && response.data) {
                 var department = response.data[0];
                 $("#editDepartmentId").val(department.id);
-                $("#editDepartmentDropdown").val(department.name);
+                $("#editDepartmentNameInput").val(department.name);
                 $("#editDepartmentLocation").val(department.locationID);
                 $('#editDepartmentModal').modal('show');
             } else {
@@ -514,16 +533,18 @@ $(document).on('click', '.editDepartmentBtn', function() {
     
 $(document).on('click', '.editLocationBtn', function() {
     var locationId = $(this).data('id');
+    var locationName = $(this).closest('tr').find('.locationName').text();
+    $("#editLocationNameInput").val(locationName);
     var modal = $('#editLocationModal');
     modal.find('input#editLocationId').val(locationId);
-    fetchAndPopulateLocationsDropdown('#editLocationDropdown');
+    $('#editLocationModal').modal('show');
 });
 
 $(document).ready(function() {
 $("#editLocationForm").on("submit", function(e) {
     e.preventDefault(); 
     var locationId = $("#editLocationId").val();
-    var locationName = $("#editLocationDropdown option:selected").text();
+    var locationName = $("#editLocationNameInput").val();
         $.ajax({
             url: '/project2/php/editLocation.php',
             method: 'POST',
@@ -633,13 +654,18 @@ function refreshAllLocations() {
         type: 'GET',
         dataType: 'json',
         success: function(response) {
-            fetchAndPopulateLocations(response.data);
+            if (response && response.data) {
+                populateLocationsTable(response.data);
+            } else {
+                console.error('Unexpected response format:', response);
+            }
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.error('Error: ' + textStatus + ' - ' + errorThrown);
         }
     });
 }
+
 
 
 $('#editDepartmentBtn').click(function() {
@@ -783,10 +809,15 @@ function deleteEmployee(employeeID) {
 }
 
 $(document).on('click', '.deletePersonnelBtn', function() {
+    var $row = $(this).closest('tr');
+    var nameString = $row.find('.employeeName').text().trim();
+    var names = nameString.split(',').map(name => name.trim()); // Split by comma and trim
+    var fullName = names[1] + " " + names[0]; // Reverse the order
+
+    $('#employeeNameDisplay').text(fullName); 
     employeeIDToDelete = $(this).data('id');
     $('#confirmationModal').modal('show');
 });
-
 $(document).on('click', '#confirmDelete', function() {
     deleteEmployee(employeeIDToDelete);
     $(this).removeData('bs.modal');

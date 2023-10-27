@@ -177,13 +177,10 @@
 
           <input type="hidden" id="editDepartmentId" value="">
 
-          <div class="form-floating mb-3">
-            <!-- Replaced the input with a select dropdown for department names -->
-            <select class="form-select" id="editDepartmentDropdown" required>
-                <!-- Options will be populated dynamically -->
-            </select>
-            <label for="editDepartmentDropdown">Department Name</label>
-          </div>
+ <div class="form-floating mb-3">
+    <input type="text" class="form-control" id="editDepartmentNameInput" placeholder="Department Name" required>
+    <label for="editDepartmentNameInput">Department Name</label>
+</div>
 
           <div class="form-floating">
             <select class="form-select" id="editDepartmentLocation" placeholder="Location" required>
@@ -218,11 +215,10 @@
             <form id="editLocationForm">
                 <div class="modal-body">
                     <input type="hidden" id="editLocationId" value="">
-                    <div class="form-floating mb-3">
-                        <!-- Changed this to a dropdown -->
-                        <select class="form-select" id="editLocationDropdown" required></select>
-                        <label for="editLocationDropdown">Location Name</label>
-                    </div>
+<div class="form-floating mb-3">
+    <input type="text" class="form-control" id="editLocationNameInput" required>
+    <label for="editLocationNameInput">Location Name</label>
+</div>
                     <!-- You can add more input fields here if needed -->
                 </div>
                 <div class="modal-footer">
@@ -239,15 +235,15 @@
           
 <!-- Delete Employee Modal -->
 <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered"> <!-- Centered modal -->
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="confirmationModalLabel">Confirm Deletion</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        Are you sure you want to delete this employee?
-      </div>
+    Are you sure you want to delete <span id="employeeNameDisplay"></span>?
+</div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         <button type="button" class="btn btn-danger" id="confirmDelete">Confirm</button>
@@ -407,10 +403,9 @@
         <form id="addDepartmentForm">
 
           <div class="form-floating mb-3">
-            <select class="form-select" id="addDepartmentNameDropdown" required>
-        <!-- Options will be populated dynamically -->
-    </select>
-          </div>
+    <input type="text" class="form-control" id="addDepartmentNameInput" placeholder="Department Name" required>
+    <label for="addDepartmentNameInput">Department Name</label>
+</div>
 
           <div class="form-floating">
             <select class="form-select" id="addDepartmentLocation" placeholder="Location" required>
@@ -468,21 +463,23 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form>
-          <div class="form-floating mb-3">
+    <form>
+        <div class="form-floating mb-3">
             <select class="form-select" id="filterDepartment" placeholder="Department" required>
-              <!-- Options will be populated by jQuery -->
+                <option value="all">All</option>
+                <!-- Other Options will be populated by jQuery -->
             </select>
             <label for="filterDepartment">Department:</label>
-          </div>
-          <div class="form-floating">
+        </div>
+        <div class="form-floating">
             <select class="form-select" id="filterLocation" placeholder="Location" required>
-              <!-- Options will be populated by jQuery -->
+                <option value="all">All</option>
+                <!-- Other Options will be populated by jQuery -->
             </select>
             <label for="filterLocation">Location:</label>
-          </div>
-        </form>
-      </div>
+        </div>
+    </form>
+</div>
       <div class="modal-footer">
         <button type="button" class="btn btn-outline-primary btn-sm myBtn" id="applyFilterBtn">Apply</button>
         <button type="button" class="btn btn-outline-primary btn-sm myBtn" data-bs-dismiss="modal">Close</button>

@@ -37,35 +37,31 @@
 	// SQL statement accepts parameters and so is prepared to avoid SQL injection.
 	// $_REQUEST used for development / debugging. Remember to change to $_POST for production
 
-	$query = $conn->prepare('INSERT INTO department (name, locationID) VALUES(?,?)');
+ $query = $conn->prepare('INSERT INTO department (name, locationID) VALUES(?,?)');
+    $query->bind_param("si", $_REQUEST['name'], $_REQUEST['locationID']);
+    $query->execute();
 
-	$query->bind_param("si", $_REQUEST['name'], $_REQUEST['locationID']);
+    if (false === $query) {
+        $output['status']['code'] = "400";
+        $output['status']['name'] = "executed";
+        $output['status']['description'] = "query failed";    
+        $output['data'] = [];
+        mysqli_close($conn);
+        echo json_encode($output); 
+        exit;
+    }
 
-	$query->execute();
-	
-	if (false === $query) {
+    $newDepartmentId = $conn->insert_id;
+    $fetchQuery = "SELECT department.id, department.name, location.name as locationName FROM department LEFT JOIN location ON department.locationID = location.id WHERE department.id = $newDepartmentId";
+    $result = $conn->query($fetchQuery);
+    $newDepartment = $result->fetch_assoc();
 
-		$output['status']['code'] = "400";
-		$output['status']['name'] = "executed";
-		$output['status']['description'] = "query failed";	
-		$output['data'] = [];
+    $output['status']['code'] = "200";
+    $output['status']['name'] = "ok";
+    $output['status']['description'] = "success";
+    $output['status']['returnedIn'] = (microtime(true) - $executionStartTime) / 1000 . " ms";
+    $output['data'] = $newDepartment;
 
-		mysqli_close($conn);
-
-		echo json_encode($output); 
-
-		exit;
-
-	}
-
-	$output['status']['code'] = "200";
-	$output['status']['name'] = "ok";
-	$output['status']['description'] = "success";
-	$output['status']['returnedIn'] = (microtime(true) - $executionStartTime) / 1000 . " ms";
-	$output['data'] = [];
-	
-	mysqli_close($conn);
-
-	echo json_encode($output); 
-
+    mysqli_close($conn);
+    echo json_encode($output); 
 ?>

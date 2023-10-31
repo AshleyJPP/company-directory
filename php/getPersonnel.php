@@ -1,6 +1,9 @@
 <?php
 include "config.php";
 
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
 $col = $_GET["column"] ?? null;
 $col = $col ? escape($col) : null;
 $operator = $_GET["operator"] ?? null;
@@ -39,7 +42,7 @@ FROM personnel p
 LEFT JOIN department d ON (d.id = p.departmentID)
 LEFT JOIN location l ON (l.id = d.locationID)
 $where
-ORDER BY $order ";
+ORDER BY p.lastName, p.firstName ";
 
 $query = $sort ? $query . $sort : $query;
 $result = db($query);
@@ -48,3 +51,4 @@ while ($row = $result->fetch_assoc()) {
     array_push($data, $row);
 }
 json(200, "ok", "success", $data);
+?>

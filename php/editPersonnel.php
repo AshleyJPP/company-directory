@@ -6,7 +6,6 @@ error_reporting(E_ALL);
 
 include 'config.php';
 
-
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $id = $_POST['id'];
     $firstName = $_POST['firstName'];
@@ -17,12 +16,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     $stmt = $conn->prepare("UPDATE personnel SET firstName = ?, lastName = ?, jobTitle = ?, email = ?, departmentId = ? WHERE id = ?");
 
-    
     $stmt->bind_param("sssssi", $firstName, $lastName, $jobTitle, $email, $department, $id);
 
-    
     if ($stmt->execute()) {
-        echo json_encode(array("statusCode"=>200));
+        $updatedData = [
+            'id' => $id,
+            'firstName' => $firstName,
+            'lastName' => $lastName,
+            'jobTitle' => $jobTitle,
+            'email' => $email,
+            'departmentId' => $department
+        ];
+        echo json_encode(array("statusCode"=>200, "data" => $updatedData));
     } 
     else {
         echo json_encode(array("statusCode"=>201, "error" => $stmt->error));
@@ -34,4 +39,5 @@ else {
     // Not a POST request
     echo json_encode(array("statusCode"=>202));
 }
+
 ?>

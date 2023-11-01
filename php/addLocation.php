@@ -1,26 +1,26 @@
 <?php
-include("config.php"); // your database connection file
+include("config.php");
 
 $response = array();
 
 if(isset($_POST['locationName'])) {
     $locationName = $_POST['locationName'];
 
-    $query = "INSERT INTO location (name) VALUES (?)"; // assuming your location table has a 'name' column
+    $query = "INSERT INTO location (name) VALUES (?)";
 
     if($stmt = $conn->prepare($query)) {
         $stmt->bind_param("s", $locationName);
 
         if($stmt->execute()) {
-            $last_id = $stmt->insert_id; // Get the ID of the newly inserted location
+            $last_id = $stmt->insert_id;
 
             $response["status"] = array(
                 "code" => 200,
                 "description" => "Location added successfully."
             );
             $response["data"] = array(
-                "id" => $last_id, // Send the new location's ID
-                "name" => $locationName // Send the new location's name
+                "id" => $last_id,
+                "name" => $locationName 
             );
         } else {
             $response["status"] = array(

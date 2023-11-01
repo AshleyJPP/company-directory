@@ -4,18 +4,16 @@ ini_set('display_startup_errors', '1');
 error_reporting(E_ALL);
 
 $executionStartTime = microtime(true);
-
-// Include the preset username, password etc. for database
 require_once 'config.php';
 
-// Check if 'id' is provided in the request
+
 if (!isset($_POST['id'])) {
     die(json_encode(["error" => "Employee ID not provided"]));
 }
 
 $employeeID = $_POST['id'];
 
-$stmt = $conn->prepare("DELETE FROM personnel WHERE id = ?"); // Use a placeholder for the employee ID
+$stmt = $conn->prepare("DELETE FROM personnel WHERE id = ?");
 
 
 $stmt->bind_param("i", $employeeID);

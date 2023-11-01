@@ -1,48 +1,55 @@
 <?php
-include("config.php");
+    // Enable error reporting for debugging (disable in production)
+    ini_set('display_errors', '1');
+    error_reporting(E_ALL);
 
-$response = array();
+    if(isset($_POST['firstName']) && isset($_POST['lastName']) && isset($_POST['jobTitle']) && isset($_POST['email']) && isset($_POST['departmentID'])) {
+        
+        require_once("config.php");
 
-if(isset($_POST['locationName'])) {
-    $locationName = $_POST['locationName'];
-
-    $query = "INSERT INTO location (name) VALUES (?)";
-
-    if($stmt = $conn->prepare($query)) {
-        $stmt->bind_param("s", $locationName);
-
-        if($stmt->execute()) {
-            $last_id = $stmt->insert_id;
-
-            $response["status"] = array(
-                "code" => 200,
-                "description" => "Location added successfully."
-            );
-            $response["data"] = array(
-                "id" => $last_id,
-                "name" => $locationName 
-            );
-        } else {
-            $response["status"] = array(
-                "code" => 400,
-                "description" => "Failed to add location."
-            );
+        $stmt = $conn->prepare("INSERT INTO personnel (firstName, lastName, jobTitle, email, departmentID) VALUES (?, ?, ?, ?, ?)");
+        
+        if (false === $stmt) {
+            die(json_encode(['status' => 'error', 'message' => 'Database prepare operation failed']));
         }
+
+        $firstName = ucwords(strtolower(trim($_POST['firstName'])));
+        $lastName = ucwords(strtolower(trim($_POST['lastName'])));
+        $jobTitle = ucwords(strtolower(trim($_POST['jobTitle'])));
+        $email = trim($_POST['email']);
+        $departmentID = intval($_POST['departmentID']);
+
+        $stmt->bind_param("ssssi", $firstName, $lastName, $jobTitle, $email, $departmentID);
+        $result = $stmt->execute();
+
+        if (false === $result) {
+            die(json_encode(['status' => 'error', 'message' => 'Database execute operation failed']));
+        }
+
+        $newEmployeeId = $conn->insert_id;
+
+        $stmt = $conn->prepare("SELECT p.*, d.name as departmentName, l.name as locationName FROM personnel p LEFT JOIN department d ON p.departmentID = d.id LEFT JOIN location l ON d.locationID = l.id WHERE p.id = ?");
+
+        
+        if (false === $stmt) {
+            die(json_encode(['status' => 'error', 'message' => 'Database prepare operation failed']));
+        }
+
+        $stmt->bind_param("i", $newEmployeeId);
+        $result = $stmt->execute();
+
+        if (false === $result) {
+            die(json_encode(['status' => 'error', 'message' => 'Database execute operation failed']));
+        }
+
+        $result = $stmt->get_result();
+        $newEmployee = $result->fetch_assoc();
+
+        echo json_encode(['status' => 'success', 'message' => 'Employee added successfully', 'employee' => $newEmployee]);
+
         $stmt->close();
+        $conn->close();
     } else {
-        $response["status"] = array(
-            "code" => 400,
-            "description" => "Failed to prepare statement."
-        );
+        die(json_encode(['status' => 'error', 'message' => 'Insufficient data provided']));
     }
-} else {
-    $response["status"] = array(
-        "code" => 400,
-        "description" => "Invalid request. Missing parameters."
-    );
-}
-
-$conn->close();
-
-echo json_encode($response);
 ?>

@@ -23,11 +23,10 @@ if (mysqli_connect_errno()) {
     mysqli_close($conn);
 
     echo json_encode($output);
-
     exit;
 }   
 
-if (!isset($_POST['name']) || !is_string($_POST['name']) ||
+if (!isset($_POST['id']) || !is_numeric($_POST['id']) ||
     !isset($_POST['locationID']) || !is_numeric($_POST['locationID'])) {
     $output['status']['code'] = "400";
     $output['status']['name'] = "executed";
@@ -37,58 +36,40 @@ if (!isset($_POST['name']) || !is_string($_POST['name']) ||
     mysqli_close($conn);
 
     echo json_encode($output); 
-
     exit;
 }
 
-$name = $_POST['name'];
+$departmentId = $_POST['id'];
 $locationID = $_POST['locationID'];
 
-// Check if a department with the same name already exists
-$checkQuery = $conn->prepare("SELECT * FROM department WHERE name = ?");
-$checkQuery->bind_param("s", $name);
+$checkQuery = $conn->prepare("SELECT * FROM department WHERE id = ?");
+$checkQuery->bind_param("i", $departmentId);
 $checkQuery->execute();
 $checkResult = $checkQuery->get_result();
 
-if ($checkResult->num_rows > 0) {
-    // A department with the same name already exists
+if ($checkResult->num_rows == 0) {
     $output['status']['code'] = "400";
     $output['status']['name'] = "executed";
-    $output['status']['description'] = "A department with the same name already exists";  
+    $output['status']['description'] = "No department with the given ID exists";  
     $output['data'] = [];
 
     mysqli_close($conn);
 
     echo json_encode($output); 
-
     exit;
 }
 
-// Prepare an INSERT statement
-$stmt = $conn->prepare("INSERT INTO department (name, locationID) VALUES (?, ?)");
-$stmt->bind_param("si", $name, $locationID);
+$departmentName = $_POST['name'];
+$stmt = $conn->prepare("UPDATE department SET name = ?, locationID = ? WHERE id = ?");
+$stmt->bind_param("sii", $departmentName, $locationID, $departmentId);
 
 if ($stmt->execute()) {
     // success
-    $newId = $conn->insert_id; // Get the new ID assigned by the database
-
-    // New query to get the location name from the location table
-    $locationQuery = $conn->prepare("SELECT name FROM location WHERE id = ?");
-    $locationQuery->bind_param("i", $locationID);
-    $locationQuery->execute();
-    $locationResult = $locationQuery->get_result();
-    $locationName = '';
-    if ($locationData = $locationResult->fetch_assoc()) {
-        $locationName = $locationData['name'];
-    }
-
     $output['status']['code'] = "200";
     $output['status']['name'] = "ok";
     $output['status']['description'] = "success";
-    // Include location name in the response
-    $output['data'] = ['id' => $newId, 'name' => $name, 'locationID' => $locationID, 'locationName' => $locationName]; // Return new department data
+    $output['data'] = ['id' => $departmentId, 'locationID' => $locationID];
 } else {
-    // handle error
     $output['status']['code'] = "400";
     $output['status']['name'] = "executed";
     $output['status']['description'] = "query failed";  

@@ -161,20 +161,20 @@ function updateTableWithFilteredData(filteredData) {
         tableBody.append('<tr><td colspan="4" class="text-center">No data found for the applied filters.</td></tr>');
         return;
     }
-    $.each(filteredData, function (index, employee) {
-        var formattedName = employee.lastName + ", " + employee.firstName;
-        var newRow = "<tr data-employee-id='" + employee.id + "'>" +
-                        "<td>" + formattedName + "</td>" +
-                        "<td>" + employee.email + "</td>" +
-                        "<td>" + employee.department + "</td>" + 
-                        "<td>" + employee.location + "</td>" +
-                        "<td class='text-end text-nowrap'>" +
-                            "<button type='button' class='btn btn-primary btn-sm editPersonnelBtn' data-bs-toggle='modal' data-bs-target='#editPersonnelModal' data-id='" + employee.id + "'><i class='fa-solid fa-pencil fa-fw'></i></button> " +
-                            "<button type='button' class='btn btn-danger btn-sm deletePersonnelBtn' data-id='" + employee.id + "'><i class='fa-solid fa-trash fa-fw'></i></button>" +
-                        "</td>" +
-                    "</tr>";
-        tableBody.append(newRow);
-    });
+$.each(filteredData, function (index, employee) {
+    var formattedName = employee.lastName + ", " + employee.firstName;
+    var newRow = "<tr data-employee-id='" + employee.id + "'>" +
+                    "<td class='align-middle text-nowrap employeeName'>" + formattedName + "</td>" +
+                    "<td>" + employee.email + "</td>" +
+                    "<td>" + employee.department + "</td>" + 
+                    "<td>" + employee.location + "</td>" +
+                    "<td class='text-end text-nowrap'>" +
+                        "<button type='button' class='btn btn-primary btn-sm editPersonnelBtn' data-bs-toggle='modal' data-bs-target='#editPersonnelModal' data-id='" + employee.id + "'><i class='fa-solid fa-pencil fa-fw'></i></button> " +
+                        "<button type='button' class='btn btn-danger btn-sm deletePersonnelBtn' data-id='" + employee.id + "'><i class='fa-solid fa-trash fa-fw'></i></button>" +
+                    "</td>" +
+                "</tr>";
+    tableBody.append(newRow);
+});
 }
 
 
@@ -877,32 +877,48 @@ function deleteEmployee(employeeID) {
         url: "/project2/php/deleteEmployee.php",
         type: 'POST',
         dataType: 'json',
-        data: {
-            id: employeeID
-        },
+        data: { id: employeeID },
         success: function(result) {
-            $("tr[data-employee-id='" + employeeID + "']").remove();
+            // Check if the status code is a string '200' or a number 200
+            if (result.status && (result.status.code === '200' || result.status.code === 200)) {
+                $("tr[data-employee-id='" + employeeID + "']").remove();
+            } else {
+                // Log the entire result object if deletion is not successful
+                console.error('Failed to delete employee:', result);
+            }
         },
-        error: function(jqXHR, exception){
-            console.log("Error occurred while trying to delete profiles");
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.error("Error occurred while trying to delete employee:", textStatus, errorThrown);
         }
     });
 }
+
+
+$(document).on('click', '#confirmDelete', function() {
+    if (employeeIDToDelete) {
+        deleteEmployee(employeeIDToDelete);
+        $('#confirmationModal').modal('hide');
+    } else {
+        console.error('No employee ID to delete');
+    }
+});
+
+
+var employeeIDToDelete;
 
 $(document).on('click', '.deletePersonnelBtn', function() {
     var $row = $(this).closest('tr');
     var nameString = $row.find('.employeeName').text().trim();
     var names = nameString.split(',').map(name => name.trim());
+    if (names.length < 2) {
+        console.error('Name format incorrect:', nameString);
+        return;
+    }
     var fullName = names[1] + " " + names[0];
-
-    $('#employeeNameDisplay').text(fullName); 
+    
+    $('#employeeNameDisplay').text(fullName);
     employeeIDToDelete = $(this).data('id');
     $('#confirmationModal').modal('show');
-});
-$(document).on('click', '#confirmDelete', function() {
-    deleteEmployee(employeeIDToDelete);
-    $(this).removeData('bs.modal');
-    $('#confirmationModal').modal('hide');
 });
 
 function populateDepartmentSelect(selector) {
@@ -944,29 +960,31 @@ function checkDepartmentDependencies(departmentId, callback) {
         dataType: 'json',
         success: function(response) {
             if (response.status === "success") {
-                callback(null, 0);
+                callback(null, 0, response.departmentName);
             } else {
-                callback(null, response.employeeCount);
+                callback(null, response.employeeCount, response.departmentName);
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
-            callback("Error checking department dependencies: " + textStatus);
+            callback("Error checking department dependencies: " + textStatus, 0, '');
         }
     });
 }
 
 $(document).on('click', '.removeDepartmentBtn', function() {
     var departmentId = $(this).data('id');
-    checkDepartmentDependencies(departmentId, function(error, count) {
+    checkDepartmentDependencies(departmentId, function(error, count, departmentName) {
         if (error) {
             console.error(error);
             return;
         }
         if (count > 0) {
-            $('#dependencyModal').find('.modal-body').text('You cannot remove this department because it has ' + count + ' employees assigned to it.');
+            var message = 'You cannot remove the ' + departmentName + ' department because it has ' + count + ' employees assigned to it.';
+            $('#dependencyModal').find('.modal-body').text(message);
             $('#dependencyModal').modal('show');
         } else {
             $('#deleteDepartmentModal').data('departmentId', departmentId);
+            $('#deleteDepartmentModal').find('#departmentNameDisplay').text(departmentName);
             $('#deleteDepartmentModal').modal('show');
         }
     });
@@ -976,38 +994,42 @@ function checkLocationDependencies(locationId, callback) {
     $.ajax({
         url: '/project2/php/checkLocationDependencies.php',
         type: 'POST',
-        data: { locationId: locationId },
         dataType: 'json',
+        data: { locationId: locationId },
         success: function(response) {
-            if (response.status === "success") {
-                callback(null, response.departmentCount);
+            console.log(response);
+            if (response.status === 'error') {
+                callback(response.message, response.departmentCount, response.locationName);
             } else {
-                callback(response.message);
+                callback(null, 0, response.locationName);
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
-            callback("Error checking location dependencies: " + textStatus);
+            console.error("Error during dependency check:", textStatus, errorThrown);
+            callback('An unexpected error occurred.', null, null);
         }
     });
 }
 
 $(document).on('click', '.deleteLocationBtn', function() {
     var locationId = $(this).data('id');
-    checkLocationDependencies(locationId, function(error, departmentCount) {
+
+    checkLocationDependencies(locationId, function(error, departmentCount, locationName) {
         if (error) {
             $('#dependencyModal').find('.modal-body').text(error);
             $('#dependencyModal').modal('show');
             return;
         }
         if (departmentCount > 0) {
-            var message = 'You cannot remove this location as it has ' + departmentCount + ' departments assigned to it.';
+            var message = 'You cannot remove ' + locationName + ' as it has ' + departmentCount + ' departments assigned to it.';
             $('#dependencyModal').find('.modal-body').text(message);
             $('#dependencyModal').modal('show');
         } else {
+            var deleteMessage = 'Are you sure you want to delete the location ' + locationName + '?';
+            $('#deleteLocationModal').find('.modal-body p').text(deleteMessage);
             $('#deleteLocationModal').data('id', locationId).modal('show');
         }
     });
 });
-
 
 

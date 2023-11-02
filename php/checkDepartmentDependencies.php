@@ -6,7 +6,7 @@ $departmentId = $_POST['departmentId'];
 $response = array();
 
 try {
-    $query = "SELECT COUNT(*) as count FROM personnel WHERE departmentid = ?";
+    $query = "SELECT d.name, COUNT(p.id) as count FROM department d LEFT JOIN personnel p ON p.departmentid = d.id WHERE d.id = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("i", $departmentId);
     $stmt->execute();
@@ -14,6 +14,7 @@ try {
     $row = $result->fetch_assoc();
     
     $response['employeeCount'] = $row['count'];
+    $response['departmentName'] = $row['name'];
     if ($row['count'] > 0) {
         $response['status'] = 'error';
         $response['message'] = 'There are ' . $row['count'] . ' personnel associated with this department. Cannot delete.';

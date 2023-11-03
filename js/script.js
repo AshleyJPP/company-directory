@@ -1,48 +1,53 @@
-var personnelData = [];
-var emplloyeeIDToDelete;
-
 $(document).ready(function() {
     
-$("#refreshBtn").click(function () {
-    if ($("#personnelBtn").hasClass("active")) {
-        refreshAllData();
-    } else if ($("#departmentsBtn").hasClass("active")) {
-        refreshAllDepartments();
-    } else if ($("#locationsBtn").hasClass("active")) {
-        refreshAllLocations();
+    function toggleFilterButton() {
+        var isDepartmentsActive = $('#departmentsBtn').hasClass('active');
+        var isLocationsActive = $('#locationsBtn').hasClass('active');
+        var isFilterDisabled = isDepartmentsActive || isLocationsActive;
+        $("#filterBtn").prop('disabled', isFilterDisabled);
+        console.log("Departments active: " + isDepartmentsActive + ", Locations active: " + isLocationsActive);
+        console.log("Filter button should be " + (isFilterDisabled ? "disabled" : "enabled"));
     }
-});
 
+    toggleFilterButton();
 
-$("#filterBtn").click(function () {
-        fetchAndPopulateDepartmentsDropdown('#filterDepartment');
-        fetchAndPopulateLocationsDropdown('#filterLocation');
-        $('#filterModal').modal('show');
+    $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
+        toggleFilterButton();
+    });
+    $("#refreshBtn").click(function() {
+        if ($("#personnelBtn").hasClass('active')) {
+            refreshAllData();
+        } else if ($("#departmentsBtn").hasClass('active')) {
+            refreshAllDepartments();
+        } else if ($("#locationsBtn").hasClass('active')) {
+            refreshAllLocations();
+        }
+    });
+    $("#filterBtn").click(function() {
+        if (!$(this).prop('disabled')) {
+            fetchAndPopulateDepartmentsDropdown('#filterDepartment');
+            fetchAndPopulateLocationsDropdown('#filterLocation');
+            $('#filterModal').modal('show');
+        }
     });
     $("#applyFilterBtn").click(function() {
-    var selectedDepartment = $("#filterDepartment").val();
-    var selectedLocation = $("#filterLocation").val();
-    filterTable(selectedDepartment, selectedLocation);
+        var selectedDepartment = $("#filterDepartment").val();
+        var selectedLocation = $("#filterLocation").val();
+        filterTable(selectedDepartment, selectedLocation);
         $('#filterModal').modal('hide');
     });
-});
+    $("#filterDepartment").change(function() {
+        if ($(this).val() !== "all") {
+            $("#filterLocation").val("all");
+        }
+    });
 
-$("#filterDepartment").change(function() {
-    if ($(this).val() !== "all") {
-        $("#filterLocation").val("all");
-    }
-});
+    $("#filterLocation").change(function() {
+        if ($(this).val() !== "all") {
+            $("#filterDepartment").val("all");
+        }
+    });
 
-$("#filterLocation").change(function() {
-    if ($(this).val() !== "all") {
-        $("#filterDepartment").val("all");
-    }
-});
-
-$("#applyFilterBtn").click(function() {
-    var selectedDepartment = $("#filterDepartment").val();
-    var selectedLocation = $("#filterLocation").val();
-    $('#filterModal').modal('hide');
 });
   
 
@@ -879,11 +884,9 @@ function deleteEmployee(employeeID) {
         dataType: 'json',
         data: { id: employeeID },
         success: function(result) {
-            // Check if the status code is a string '200' or a number 200
             if (result.status && (result.status.code === '200' || result.status.code === 200)) {
                 $("tr[data-employee-id='" + employeeID + "']").remove();
             } else {
-                // Log the entire result object if deletion is not successful
                 console.error('Failed to delete employee:', result);
             }
         },
